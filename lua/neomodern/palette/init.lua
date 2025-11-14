@@ -1,4 +1,5 @@
 local M = {}
+local Util = require("neomodern.util")
 
 ---@class neomodern.Theme
 ---@field alt string highlight
@@ -49,17 +50,37 @@ M.themes = {
 }
 
 for key, theme in pairs(M.themes) do
-    M[key] = require("neomodern.palette." .. theme)
+    local palette = require("neomodern.palette." .. theme)
+    palette.dim = Util.blend(palette.bg, 0.9, "#000000")
+    M[key] = palette
 end
 
----Returns a read-only copy of the light or dark variant of a theme.
----@param theme string
----@param variant string
-M.get = function(theme, variant)
-    if variant == "light" then
-        return require("neomodern.palette.day").get()
+---@class neomodern.PaletteOpts
+---@field theme string
+---@field variant string
+---@field flat boolean | nil
+
+---Returns an owned copy of the light or dark variant of a theme.
+---@param opts neomodern.PaletteOpts
+function M.get(opts)
+    local palette
+    if opts.variant == "light" then
+        palette = require("neomodern.palette.day").get()
     else
-        return vim.deepcopy(M[theme])
+        palette = vim.deepcopy(M[opts.theme])
+    end
+
+    if opts.flat ~= nil and opts.flat then
+        return vim.tbl_deep_extend("force", palette.colormap, palette)
+    end
+    return palette
+end
+
+---@param opts neomodern.PaletteOpts
+function M.set_term_colors(opts)
+    local palette = M.get(opts)
+    for i, c in ipairs(palette.colormap) do
+        vim.g["terminal_color_" .. i - 1] = c
     end
 end
 

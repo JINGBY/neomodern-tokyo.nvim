@@ -3,16 +3,16 @@ local M = {}
 ---@alias Highlight {fg:string, bg:string, sp:string, fmt:string}
 
 ---@param highlights table<string,Highlight>
-local function vim_highlights(highlights)
-    for group, hi in pairs(highlights) do
+local function set_highlights(highlights)
+    for group, hl in pairs(highlights) do
         vim.api.nvim_command(
             string.format(
                 "highlight %s guifg=%s guibg=%s guisp=%s gui=%s",
                 group,
-                hi.fg or "none",
-                hi.bg or "none",
-                hi.sp or "none",
-                hi.fmt or "none"
+                hl.fg or "none",
+                hl.bg or "none",
+                hl.sp or "none",
+                hl.fmt or "none"
             )
         )
     end
@@ -48,29 +48,33 @@ function M.setup()
     ---@type neomodern.Config
     local Config = require("neomodern").options()
     ---@type neomodern.Theme
-    local c = require("neomodern.palette").get(Config.theme, Config.variant)
+    local palette = require("neomodern.palette").get({
+        theme = Config.theme,
+        variant = Config.variant,
+        flat = false,
+    })
 
-    local COMMON = require("neomodern.highlights.common").get()
-    local SYNTAX = require("neomodern.highlights.syntax").get()
-    local PLUGIN = require("neomodern.highlights.plugin").get()
+    local VIM = require("neomodern.highlights.vim").get(palette)
+    local SYNTAX = require("neomodern.highlights.syntax").get(palette)
+    local PLUGIN = require("neomodern.highlights.plugin").get(palette)
 
-    vim_highlights(COMMON)
+    set_highlights(VIM)
     for _, group in pairs(SYNTAX) do
-        vim_highlights(group)
+        set_highlights(group)
     end
     for _, group in pairs(PLUGIN) do
-        vim_highlights(group)
+        set_highlights(group)
     end
 
-    for group, hi in pairs(Config.highlights) do
+    for group, hl in pairs(Config.highlights) do
         vim.api.nvim_command(
             string.format(
                 "highlight %s %s %s %s %s",
                 group,
-                overwrite("guifg", hi.fg, c),
-                overwrite("guibg", hi.bg, c),
-                overwrite("guisp", hi.sp, c),
-                overwrite("gui", hi.fmt, c)
+                overwrite("guifg", hl.fg, palette),
+                overwrite("guibg", hl.bg, palette),
+                overwrite("guisp", hl.sp, palette),
+                overwrite("gui", hl.fmt, palette)
             )
         )
     end

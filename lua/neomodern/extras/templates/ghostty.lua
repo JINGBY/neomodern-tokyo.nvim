@@ -7,12 +7,6 @@ function M.generate(colors, info)
     colors.url = info.url
     colors.upstream = info.upstream
     colors.theme = info.theme
-    local c = {}
-    for k, v in pairs(c) do
-        if type(v) == "string" then
-            c[k] = v:gsub("^#", "")
-        end
-    end
 
     local ghostty = Util.template(
         [=[
@@ -38,12 +32,12 @@ palette = 13=${c0D}
 palette = 14=${c0E}
 palette = 15=${c0F}
 background = ${bg}
-foreground = {$fg}
-cursor-color = {$fg}
+foreground = ${fg}
+cursor-color = ${fg}
 selection-background = ${visual}
 selection-foreground = ${type}
 ]=],
-        c
+        colors
     )
 
     return ghostty

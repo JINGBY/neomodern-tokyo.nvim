@@ -1,3 +1,4 @@
 #!/bin/bash
 
-nvim -u ./minit.lua --headless +"lua require('neomodern.extras').setup()" +qa
+nvim -c "lua require('neomodern.extras').generate()" -c "q"
+git commit -am "chore(extras): auto-gen"
